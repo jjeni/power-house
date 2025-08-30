@@ -1,11 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Trash,
-  MessageCircle,
-  Calendar,
-  Send,
-  SquarePen,
-} from "lucide-react";
+import { Trash, MessageCircle, Calendar, Send, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import FireLogo from "./Svg";
@@ -13,9 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import NavbarProfile from "@/components/NavbarProfile";
 import Linkify from "linkify-react";
-import { HubFilter } from "@/components/HubFilter"
+import { HubFilter } from "@/components/HubFilter";
 import leoProfanity from "leo-profanity";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,6 @@ const formatDate = (date: any) => {
 };
 
 const HubPage = () => {
-  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState("all");
@@ -109,6 +108,17 @@ const HubPage = () => {
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [isPowering, setIsPowering] = useState(false);
+  const [hidhlightPostButton, setHighlightPostButton] = useState(false);
+  const postButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const handleHighlightPostButton = () => {
+  setHighlightPostButton(true);
+
+  // remove highlight after 2 seconds
+  setTimeout(() => {
+    setHighlightPostButton(false);
+  }, 2000);
+  };
 
   const [newPost, setNewPost] = useState({
     title: "",
@@ -123,74 +133,70 @@ const HubPage = () => {
 
   const [authChecked, setAuthChecked] = useState(false);
 
-useEffect(() => {
-  let handled = false; // To prevent double setUser/setIsLoggedIn
+  useEffect(() => {
+    let handled = false; // To prevent double setUser/setIsLoggedIn
 
-  // wait for redirect result, if any
-  getRedirectResult(auth)
-    .then((result) => {
-      if (result?.user && !handled) {
+    // wait for redirect result, if any
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user && !handled) {
+          setUser({
+            uid: result.user.uid,
+            displayName: result.user.displayName,
+            email: result.user.email,
+            photoURL: result.user.photoURL,
+          });
+          setIsLoggedIn(true);
+          handled = true;
+          toast({
+            title: `Welcome, ${result.user.displayName}! 🎉`,
+            description: "You're now connected to the community.",
+          });
+        }
+        setAuthChecked(true); // Always set this
+      })
+      .catch((error) => {
+        setAuthChecked(true);
+      });
+
+    // real state observable
+    const unsub = onAuthStateChanged(auth, (u) => {
+      if (u && !handled) {
         setUser({
-          uid: result.user.uid,
-          displayName: result.user.displayName,
-          email: result.user.email,
-          photoURL: result.user.photoURL,
+          uid: u.uid,
+          displayName: u.displayName,
+          email: u.email,
+          photoURL: u.photoURL,
         });
         setIsLoggedIn(true);
         handled = true;
-        toast({
-          title: `Welcome, ${result.user.displayName}! 🎉`,
-          description: "You're now connected to the community.",
-        });
+      } else if (!u) {
+        setUser(null);
+        setIsLoggedIn(false);
       }
-      setAuthChecked(true); // Always set this
-    })
-    .catch((error) => {
-      setAuthChecked(true);
+      setAuthChecked(true); // On every invoke, at least after first
     });
 
-  // real state observable
-  const unsub = onAuthStateChanged(auth, (u) => {
-    if (u && !handled) {
-      setUser({
-        uid: u.uid,
-        displayName: u.displayName,
-        email: u.email,
-        photoURL: u.photoURL,
-      });
-      setIsLoggedIn(true);
-      handled = true;
-    } else if (!u) {
-      setUser(null);
-      setIsLoggedIn(false);
+    return () => unsub();
+  }, [toast]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return; // only fetch after login
+
+    let q;
+    if (activeTab === "top") {
+      q = query(collection(db, "posts"), orderBy("likes", "desc"));
+    } else {
+      q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     }
-    setAuthChecked(true); // On every invoke, at least after first
-  });
 
-  return () => unsub();
-}, [toast]);
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+      setPosts(data);
+    });
 
-
-
-useEffect(() => {
-  if (!isLoggedIn) return; // only fetch after login
-
-  let q;
-  if (activeTab === "top") {
-    q = query(collection(db, "posts"), orderBy("likes", "desc"));
-  } else {
-    q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  }
-
-  const unsub = onSnapshot(q, (snap) => {
-    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
-    setPosts(data);
-  });
-
-  return () => unsub();
-}, [activeTab, isLoggedIn]); // 👈 now re-fetches when login state changes
-
-
+    return () => unsub();
+  }, [activeTab, isLoggedIn]); // 👈 now re-fetches when login state changes
 
   const lastCommentRef = useRef<HTMLDivElement | null>(null);
 
@@ -209,9 +215,8 @@ useEffect(() => {
       case "ideas":
         filtered = filtered.filter((post) => post.type === "idea");
         break;
-        case "top":
-      break;
-      
+      case "top":
+        break;
     }
     if (selectedTag) {
       filtered = filtered.filter((post) => post.tags.includes(selectedTag));
@@ -225,7 +230,7 @@ useEffect(() => {
           post.tags.some((tag: string) => tag.toLowerCase().includes(query))
       );
     }
-    
+
     return filtered;
   };
 
@@ -242,39 +247,38 @@ useEffect(() => {
     }
   };
 
- const handleLogin = async () => {
-  try {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const handleLogin = async () => {
+    try {
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-    if (isMobile) {
-      // ✅ Mobile → redirect
-      await signInWithRedirect(auth, googleProvider);
-    } else {
-      // ✅ Desktop → popup
-      const result = await signInWithPopup(auth, googleProvider);
-      const u = result.user;
-      setUser({
-        uid: u.uid,
-        displayName: u.displayName,
-        email: u.email,
-        photoURL: u.photoURL,
-      });
-      setIsLoggedIn(true);
+      if (isMobile) {
+        // ✅ Mobile → redirect
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        // ✅ Desktop → popup
+        const result = await signInWithPopup(auth, googleProvider);
+        const u = result.user;
+        setUser({
+          uid: u.uid,
+          displayName: u.displayName,
+          email: u.email,
+          photoURL: u.photoURL,
+        });
+        setIsLoggedIn(true);
+        toast({
+          title: `Welcome, ${u.displayName}! 🎉`,
+          description: "You're now connected to the community.",
+        });
+      }
+    } catch (e) {
+      console.error("Login error:", e);
       toast({
-        title: `Welcome, ${u.displayName}! 🎉`,
-        description: "You're now connected to the community.",
+        title: "Login failed",
+        description: "Please try again.",
+        variant: "destructive",
       });
     }
-  } catch (e) {
-    console.error("Login error:", e);
-    toast({
-      title: "Login failed",
-      description: "Please try again.",
-      variant: "destructive",
-    });
-  }
-};
-
+  };
 
   // 🔹 Create post
   const handleCreatePost = async () => {
@@ -286,9 +290,6 @@ useEffect(() => {
       });
       return;
     }
-
-    
-    
 
     const cleanedTitle = leoProfanity.clean(newPost.title);
     const cleanedDescription = leoProfanity.clean(newPost.description);
@@ -305,6 +306,7 @@ useEffect(() => {
       author: user?.displayName || "You",
       authorId: user?.uid || null,
       avatar: (user?.displayName?.[0] || "Y").toUpperCase(),
+      photoURL: user?.photoURL || null,
       likes: 0,
       likedBy: [],
       comments: [],
@@ -375,11 +377,13 @@ useEffect(() => {
       ? current.likedBy.filter((e: string) => e !== user.email)
       : [...(current.likedBy || []), user.email];
 
-     const updatedLikes = updatedLikedBy.length;
+    const updatedLikes = updatedLikedBy.length;
 
     setPosts((prev) =>
       prev.map((p: any) =>
-        p.id === postId ? { ...p, likedBy: updatedLikedBy, likes: updatedLikes } : p
+        p.id === postId
+          ? { ...p, likedBy: updatedLikedBy, likes: updatedLikes }
+          : p
       )
     );
 
@@ -389,12 +393,12 @@ useEffect(() => {
       if (alreadyLiked) {
         await updateDoc(postRef, {
           likedBy: arrayRemove(user.email),
-          likes:updatedLikes,
+          likes: updatedLikes,
         });
       } else {
         await updateDoc(postRef, {
           likedBy: arrayUnion(user.email),
-          likes:updatedLikes,
+          likes: updatedLikes,
         });
       }
     } catch (e) {
@@ -403,7 +407,9 @@ useEffect(() => {
       // 🔹 Rollback UI if Firestore fails
       setPosts((prev) =>
         prev.map((p: any) =>
-          p.id === postId ? { ...p, likedBy: current.likedBy,  likes: current.likes  } : p
+          p.id === postId
+            ? { ...p, likedBy: current.likedBy, likes: current.likes }
+            : p
         )
       );
     }
@@ -413,7 +419,7 @@ useEffect(() => {
   const handleAddComment = async (postId: string) => {
     if (!newComment.trim() || !user) return;
 
-    const cleanedComment= leoProfanity.clean(newComment);
+    const cleanedComment = leoProfanity.clean(newComment);
 
     const newCommentObj = {
       id: Date.now(),
@@ -628,7 +634,7 @@ useEffect(() => {
                       description: e.target.value.slice(0, DESCRIPTION_LENGTH),
                     })
                   }
-                  className="bg-muted/30 bg-black border-white/20 min-h-[100px]"
+                  className="bg-muted/30 bg-black border-white/20 min-h-[100px] scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-black scrollbar-rounded-full "
                 />
                 <div
                   className={`mt-1 text-xs text-right ${
@@ -766,98 +772,101 @@ useEffect(() => {
             </div>
           </div>
 
-           <div className="max-w-6xl mx-auto">
-      <HubFilter
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+          <div className="max-w-6xl mx-auto">
+            <HubFilter
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
 
-      {/* Show content based on tab */}
-      <div>
-        {activeTab === "all" }
-        {activeTab === "tools" }
-        {activeTab === "ideas" }
-        {activeTab === "top"}
-      </div>
-    </div>
+            {/* Show content based on tab */}
+            <div>
+              {activeTab === "all"}
+              {activeTab === "tools"}
+              {activeTab === "ideas"}
+              {activeTab === "top"}
+            </div>
+          </div>
 
           {/* Posts Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {getFilteredPosts().map((post) => (
               <Card
-  key={post.id}
-  className="bg-[#A66EFF]/5 border-white/10 hover:shadow-glow hover:scale-[1.02] transition-all duration-300 cursor-pointer flex flex-col h-full"
-  onClick={() => setSelectedPostId(post.id)}
->
-  {/* Header */}
-  <CardHeader className="pb-3">
-    <div className="flex items-start justify-between mb-2">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
-          <img
-              src={user.photoURL}
-              alt="profile"
-              className="w-8 h-8 rounded-full object-cover"
-            />
-        </div>
-        <div>
-          <p className="font-medium text-foreground text-sm">{post.author}</p>
-          <p className="text-xs text-muted-foreground">
-            {formatDate(post.createdAt)}
-          </p>
-        </div>
-      </div>
-      <Badge className={`text-xs border ${getTypeColor(post.type)}`}>
-        {post.type}
-      </Badge>
-    </div>
-    <CardTitle className="text-lg font-semibold text-foreground leading-tight break-words whitespace-pre-wrap">
-      {post.title}
-    </CardTitle>
-  </CardHeader>
+                key={post.id}
+                className="bg-[#A66EFF]/5 border-white/10 hover:shadow-glow hover:scale-[1.02] transition-all duration-300 cursor-pointer flex flex-col h-full"
+                onClick={() => setSelectedPostId(post.id)}
+              >
+                {/* Header */}
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        <img
+                          src={post.photoURL || "/default-avatar.png"}
+                          alt="profile"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">
+                          {post.author}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(post.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      className={`text-xs border ${getTypeColor(post.type)}`}
+                    >
+                      {post.type}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-foreground leading-tight break-words whitespace-pre-wrap">
+                    {post.title}
+                  </CardTitle>
+                </CardHeader>
 
-  {/* Content */}
-  <CardContent className="pt-0 flex-1">
-    <p className="text-muted-foreground text-sm mb-3 line-clamp-2 break-words">
-      {post.description.substring(0, 100)}...
-    </p>
+                {/* Content */}
+                <CardContent className="pt-0 flex-1">
+                  <p className="text-muted-foreground text-sm mb-3 line-clamp-2 break-words">
+                    {post.description.substring(0, 100)}...
+                  </p>
 
-    <div className="flex flex-wrap gap-1 mb-3">
-      {post.tags.slice(0, 3).map((tag) => (
-        <Badge
-          key={tag}
-          variant="secondary"
-          className="text-xs bg-primary/10 text-primary border-primary/20 px-2 py-0.5"
-        >
-          #{tag}
-        </Badge>
-      ))}
-      {post.tags.length > 3 && (
-        <Badge
-          variant="secondary"
-          className="text-xs bg-muted/20 text-muted-foreground border-muted/30 px-2 py-0.5"
-        >
-          +{post.tags.length - 3}
-        </Badge>
-      )}
-    </div>
-  </CardContent>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {post.tags.slice(0, 3).map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="text-xs bg-primary/10 text-primary border-primary/20 px-2 py-0.5"
+                      >
+                        #{tag}
+                      </Badge>
+                    ))}
+                    {post.tags.length > 3 && (
+                      <Badge
+                        variant="secondary"
+                        className="text-xs bg-muted/20 text-muted-foreground border-muted/30 px-2 py-0.5"
+                      >
+                        +{post.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
 
-  {/* Footer (always at bottom, only 1 border) */}
-  <CardFooter className="flex items-center gap-4 pt-2 border-t border-white/10 mt-auto">
-    <div className="flex items-center gap-1 text-muted-foreground text-sm">
-      <img src="fire.svg" className="w-3 h-3" />
-      {post.likedBy?.length || 0}
-    </div>
-    <div className="flex items-center gap-1 text-muted-foreground text-sm">
-      <MessageCircle className="w-3 h-3" />
-      {post.comments.length}
-    </div>
-  </CardFooter>
-</Card>
-
+                {/* Footer (always at bottom, only 1 border) */}
+                <CardFooter className="flex items-center gap-4 pt-2 border-t border-white/10 mt-auto">
+                  <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                    <img src="fire.svg" className="w-3 h-3" />
+                    {post.likedBy?.length || 0}
+                  </div>
+                  <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                    <MessageCircle className="w-3 h-3" />
+                    {post.comments.length}
+                  </div>
+                </CardFooter>
+              </Card>
             ))}
           </div>
 
@@ -884,10 +893,10 @@ useEffect(() => {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
                       <img
-              src={user.photoURL}
-              alt="profile"
-              className="w-12 h-12 rounded-full object-cover"
-            />
+                        src={selectedPost.photoURL || "/default-avatar.png"}
+                        alt="profile"
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
                     </div>
                     <div>
                       <p className="font-medium text-left text-foreground">

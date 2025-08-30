@@ -4,7 +4,9 @@
 @tailwind utilities;
 
 /* AI Portal Design System - Modern glassmorphism with gradient themes */
-
+:root {
+  font-family: "Outfit", sans-serif;
+}
 @layer base {
   :root {
     /* AI Theme Colors */
