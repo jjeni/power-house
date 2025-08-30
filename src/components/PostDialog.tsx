@@ -6,7 +6,7 @@ import { Calendar, MessageCircle, Trash, Send } from "lucide-react";
 import Linkify from "linkify-react";
 import FireLogo from "@/pages/Svg";
 import { formatDate, getTypeColor } from "@/lib/utils"; // adjust import
-import { useState } from "react";
+
 
 type PostDialogProps = {
   selectedPost: any | null;
@@ -25,7 +25,6 @@ type PostDialogProps = {
   setCommentToDelete: (id: number) => void;
 };
 
-const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
 export default function PostDialog({
   selectedPost,
