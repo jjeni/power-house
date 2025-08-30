@@ -3,19 +3,12 @@ import { Trash, MessageCircle, Calendar, Send, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import FireLogo from "./Svg";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import NavbarProfile from "@/components/NavbarProfile";
 import Linkify from "linkify-react";
 import { HubFilter } from "@/components/HubFilter";
 import leoProfanity from "leo-profanity";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
+import CreatePostDialog  from "@/components/CreatePostDialog";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import PostsGrid from "@/components/PostGrid";
 import FlippingButton from "@/components/FlippingButton";
 import {
   serverTimestamp,
@@ -112,12 +106,12 @@ const HubPage = () => {
   const postButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleHighlightPostButton = () => {
-  setHighlightPostButton(true);
+    setHighlightPostButton(true);
 
-  // remove highlight after 2 seconds
-  setTimeout(() => {
-    setHighlightPostButton(false);
-  }, 2000);
+    // remove highlight after 2 seconds
+    setTimeout(() => {
+      setHighlightPostButton(false);
+    }, 2000);
   };
 
   const [newPost, setNewPost] = useState({
@@ -555,148 +549,16 @@ const HubPage = () => {
       </nav>
 
       <main className="pt-20 pb-12 mt-10">
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="gradient"
-              size="sm"
-              className="fixed px-4 py-1 bottom-8 right-8 bg-white text-black font-bold rounded-xl w-55 h-14 shadow-lg hover:scale-110 transition flex items-center justify-center z-50"
-            >
-              <SquarePen className="w-6 h-6 text-black" />
-              Start a post
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent className="glass-dark border-white/20 max-w-md g-background/95 backdrop-blur-xl">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-foreground">
-                Create New Post
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Title
-                </label>
-                <div className="k">
-                  <Input
-                    placeholder="Enter post title..."
-                    maxLength={TITLE_LENGTH}
-                    value={newPost.title}
-                    onChange={(e) =>
-                      setNewPost({
-                        ...newPost,
-                        title: e.target.value.slice(0, TITLE_LENGTH),
-                      })
-                    }
-                    className="glass-dark bg-black border border-white/20 text-foreground placeholder:text-muted-foreground"
-                  />
-                  <div
-                    className={`mt-1 text-xs text-right ${
-                      TITLE_LENGTH - newPost.title.length <= 15
-                        ? "text-destructive"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    Remaining Characters {TITLE_LENGTH - newPost.title.length}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Type
-                </label>
-                <select
-                  value={newPost.type}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, type: e.target.value })
-                  }
-                  className="w-full glass-dark border border-white/20 rounded-md p-2 bg-black text-foreground placeholder:text-glass-dark "
-                >
-                  <option value="tool">Tool</option>
-                  <option value="idea">Idea</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm  font-medium text-foreground mb-2 block">
-                  Description
-                </label>
-                <Textarea
-                  maxLength={DESCRIPTION_LENGTH}
-                  placeholder="Share your thoughts..."
-                  value={newPost.description}
-                  onChange={(e) =>
-                    setNewPost({
-                      ...newPost,
-                      description: e.target.value.slice(0, DESCRIPTION_LENGTH),
-                    })
-                  }
-                  className="bg-muted/30 bg-black border-white/20 min-h-[100px] scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-black scrollbar-rounded-full "
-                />
-                <div
-                  className={`mt-1 text-xs text-right ${
-                    DESCRIPTION_LENGTH - newPost.description.length <= 100
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {" "}
-                  Remaining Characters{" "}
-                  {DESCRIPTION_LENGTH - newPost.description.length}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Tags
-                </label>
-                <Input
-                  maxLength={50}
-                  placeholder="ai, machine-learning, tools (comma separated)"
-                  value={newPost.tags}
-                  onChange={(e) =>
-                    setNewPost({
-                      ...newPost,
-                      tags: e.target.value.slice(0, 30),
-                    })
-                  }
-                  className="bg-muted/30  bg-black border-white/20"
-                />
-                <div
-                  className={`mt-1 text-xs text-right ${
-                    30 - newPost.tags.length <= 10
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {" "}
-                  Remaining Characters {30 - newPost.tags.length}
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4 ">
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="flex-1 hover:bg-red-900 hover:text-white"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="gradient"
-                  onClick={handleCreatePost}
-                  className="flex-1 bg-[white] text-black font-bold"
-                  disabled={!newPost.title || !newPost.description}
-                >
-                  Create Post
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <CreatePostDialog
+          isOpen={isCreateModalOpen}
+          setIsOpen={setIsCreateModalOpen}
+          newPost={newPost}
+          setNewPost={setNewPost}
+          handleCreatePost={handleCreatePost}
+          TITLE_LENGTH={TITLE_LENGTH}
+          DESCRIPTION_LENGTH={DESCRIPTION_LENGTH}
+        
+        />
         <Dialog
           open={commentToDelete !== null}
           onOpenChange={(val) => !val && setCommentToDelete(null)}
@@ -790,85 +652,11 @@ const HubPage = () => {
           </div>
 
           {/* Posts Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getFilteredPosts().map((post) => (
-              <Card
-                key={post.id}
-                className="bg-[#A66EFF]/5 border-white/10 hover:shadow-glow hover:scale-[1.02] transition-all duration-300 cursor-pointer flex flex-col h-full"
-                onClick={() => setSelectedPostId(post.id)}
-              >
-                {/* Header */}
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
-                        <img
-                          src={post.photoURL || "/default-avatar.png"}
-                          alt="profile"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">
-                          {post.author}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(post.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge
-                      className={`text-xs border ${getTypeColor(post.type)}`}
-                    >
-                      {post.type}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg font-semibold text-foreground leading-tight break-words whitespace-pre-wrap">
-                    {post.title}
-                  </CardTitle>
-                </CardHeader>
-
-                {/* Content */}
-                <CardContent className="pt-0 flex-1">
-                  <p className="text-muted-foreground text-sm mb-3 line-clamp-2 break-words">
-                    {post.description.substring(0, 100)}...
-                  </p>
-
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {post.tags.slice(0, 3).map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="text-xs bg-primary/10 text-primary border-primary/20 px-2 py-0.5"
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                    {post.tags.length > 3 && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs bg-muted/20 text-muted-foreground border-muted/30 px-2 py-0.5"
-                      >
-                        +{post.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-
-                {/* Footer (always at bottom, only 1 border) */}
-                <CardFooter className="flex items-center gap-4 pt-2 border-t border-white/10 mt-auto">
-                  <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                    <img src="fire.svg" className="w-3 h-3" />
-                    {post.likedBy?.length || 0}
-                  </div>
-                  <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                    <MessageCircle className="w-3 h-3" />
-                    {post.comments.length}
-                  </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+          <PostsGrid
+            posts={getFilteredPosts()}
+            getTypeColor={getTypeColor}
+            onSelectPost={setSelectedPostId}
+          />
 
           {getFilteredPosts().length === 0 && (
             <div className="text-center py-12">
@@ -960,11 +748,10 @@ const HubPage = () => {
                         setTimeout(() => setIsPowering(false), 400);
                       }}
                       className={`group flex items-center gap-2 bg-transparent border-none shadow-none p-0 
-      transition-colors duration-150 ${
-        selectedPost.likedBy?.includes(user?.email)
-          ? "text-[#A66EFF] hover:bg-transparent"
-          : "text-muted-foreground hover:bg-transparent"
-      }`}
+      transition-colors duration-150 ${selectedPost.likedBy?.includes(user?.email)
+                          ? "text-[#A66EFF] hover:bg-transparent"
+                          : "text-muted-foreground hover:bg-transparent"
+                        }`}
                     >
                       <span
                         className={`transition-transform duration-300 bg-transparent
@@ -1104,11 +891,10 @@ const HubPage = () => {
                     </Button>
                   </div>
                   <div
-                    className={`text-xs text-left ${
-                      COMMENT_LENGTH - newComment.length <= 50
-                        ? "text-destructive"
-                        : "text-muted-foreground"
-                    }`}
+                    className={`text-xs text-left ${COMMENT_LENGTH - newComment.length <= 50
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                      }`}
                   >
                     {" "}
                     Remaining Characters {COMMENT_LENGTH - newComment.length}
