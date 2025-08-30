@@ -9,6 +9,9 @@ import Linkify from "linkify-react";
 import { HubFilter } from "@/components/HubFilter";
 import leoProfanity from "leo-profanity";
 import CreatePostDialog  from "@/components/CreatePostDialog";
+import DeleteCommentDialog from "@/components/DeleteCommentDialog";
+import DeletePostDialog from "@/components/DeletePostDialog";
+import PostDialog from "@/components/PostDialog";
 import {
   Dialog,
   DialogContent,
@@ -493,183 +496,7 @@ const HubPage = () => {
       toast({ title: "Signed out", description: "You have logged out." });
     } catch (e) {
       console.error("Logout error:", e);
-    }
-  };
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  // 🔹 Guest screen
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-dots-gradient bg-dots pt-10 font-outfit">
-        <main className="pt-20 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-10 lg:px-8">
-            <div className="text-center">
-              <div className="p-12 max-w-2xl mx-auto">
-                <img
-                  src="Vector.svg"
-                  className="text-primary mx-auto mb-3 animate-pulse"
-                  style={{ animationDuration: "0.7s" }}
-                />
-                <img
-                  src="OP.png"
-                  className="w-60 h-30 text-primary mx-auto mb-6"
-                />
-
-                <p className="text-xl text-muted-foreground mb-8">
-                  Join our community of AI enthusiasts to share ideas, discover
-                  tools, and connect with fellow innovators.
-                </p>
-                <Button
-                  size="lg"
-                  onClick={handleLogin}
-                  className="px-8 py-3 bg-[#A66EFF] font-bold"
-                >
-                  Sign In with Google
-                </Button>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-dots-gradient bg-dots font-outfit">
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 mt-5 mb-5">
-            <img src="Logo.png" className="w-30 h-12 text-primary" />
-            <div className="flex items-center gap-4">
-              <NavbarProfile user={user} onLogin={handleLogin} />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="pt-20 pb-12 mt-10">
-        <CreatePostDialog
-          isOpen={isCreateModalOpen}
-          setIsOpen={setIsCreateModalOpen}
-          newPost={newPost}
-          setNewPost={setNewPost}
-          handleCreatePost={handleCreatePost}
-          TITLE_LENGTH={TITLE_LENGTH}
-          DESCRIPTION_LENGTH={DESCRIPTION_LENGTH}
-        
-        />
-        <Dialog
-          open={commentToDelete !== null}
-          onOpenChange={(val) => !val && setCommentToDelete(null)}
-        >
-          <DialogContent className="glass-dark border-white/20 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold">
-                Delete Comment?
-              </DialogTitle>
-            </DialogHeader>
-            <p className="text-mute-foreground">
-              Are you sure, you want to delete your comment? This action cannot
-              be undone.
-            </p>
-            <div className="flex justify-end gap-3 mt-6">
-              <Button variant="ghost" onClick={() => setCommentToDelete(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  handleDeleteComment(selectedPost.id, commentToDelete);
-                  setCommentToDelete(null);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-          <DialogContent className="glass-dark border-white/20 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold">
-                Delete Post?
-              </DialogTitle>
-            </DialogHeader>
-            <p className="text-muted-foreground">
-              Are you sure, you want to delete this post? This action cannot be
-              undone.
-            </p>
-            <div className="flex justify-end gap-3 mt-6">
-              <Button
-                variant="ghost"
-                onClick={() => setDeleteConfirmOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleDeletePost(postToDelete)}
-              >
-                Delete
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Filter Tabs */}
-          <div>
-            <div className="text-3xl mb-2 sm:mb-4 sm:text-4xl md:text-6xl lg:text-5xl m-5 font-light text-gray-400">
-              <b className="text-white font-bold">Hello</b> {user.displayName},
-            </div>
-
-            <div className="mt-2 sm:mt-4 mx-5 flex flex-wrap items-center text-sm sm:text-base md:text-lg">
-              <span>you’ve got ideas let’s make them unstoppable,</span>
-
-              {/* Button wrapper */}
-              <div className="mt-3 sm:mt-0 sm:ml-3 ml-0">
-                <FlippingButton />
-              </div>
-            </div>
-          </div>
-
-          <div className="max-w-6xl mx-auto">
-            <HubFilter
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
-
-            {/* Show content based on tab */}
-            <div>
-              {activeTab === "all"}
-              {activeTab === "tools"}
-              {activeTab === "ideas"}
-              {activeTab === "top"}
-            </div>
-          </div>
-
-          {/* Posts Grid */}
-          <PostsGrid
-            posts={getFilteredPosts()}
-            getTypeColor={getTypeColor}
-            onSelectPost={setSelectedPostId}
-          />
-
-          {getFilteredPosts().length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No posts found for this filter.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Post Detail Modal */}
-      <Dialog
+    }<Dialog
         open={!!selectedPost}
         onOpenChange={() => setSelectedPostId(null)}
       >
@@ -905,6 +732,154 @@ const HubPage = () => {
           )}
         </DialogContent>
       </Dialog>
+  };
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // 🔹 Guest screen
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-dots-gradient bg-dots pt-10 font-outfit">
+        <main className="pt-20 pb-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-10 lg:px-8">
+            <div className="text-center">
+              <div className="p-12 max-w-2xl mx-auto">
+                <img
+                  src="Vector.svg"
+                  className="text-primary mx-auto mb-3 animate-pulse"
+                  style={{ animationDuration: "0.7s" }}
+                />
+                <img
+                  src="OP.png"
+                  className="w-60 h-30 text-primary mx-auto mb-6"
+                />
+
+                <p className="text-xl text-muted-foreground mb-8">
+                  Join our community of AI enthusiasts to share ideas, discover
+                  tools, and connect with fellow innovators.
+                </p>
+                <Button
+                  size="lg"
+                  onClick={handleLogin}
+                  className="px-8 py-3 bg-[#A66EFF] font-bold"
+                >
+                  Sign In with Google
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-dots-gradient bg-dots font-outfit">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 mt-5 mb-5">
+            <img src="Logo.png" className="w-30 h-12 text-primary" />
+            <div className="flex items-center gap-4">
+              <NavbarProfile user={user} onLogin={handleLogin} />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="pt-20 pb-12 mt-10">
+        <CreatePostDialog
+          isOpen={isCreateModalOpen}
+          setIsOpen={setIsCreateModalOpen}
+          newPost={newPost}
+          setNewPost={setNewPost}
+          handleCreatePost={handleCreatePost}
+          TITLE_LENGTH={TITLE_LENGTH}
+          DESCRIPTION_LENGTH={DESCRIPTION_LENGTH}
+        
+        />
+        <DeleteCommentDialog
+           commentToDelete={commentToDelete}
+           setCommentToDelete={setCommentToDelete}
+           handleDeleteComment={handleDeleteComment}
+           selectedPost={selectedPost}
+        />
+        <DeletePostDialog
+           deleteConfirmOpen={deleteConfirmOpen}
+           setDeleteConfirmOpen={setDeleteConfirmOpen}
+           handleDeletePost={handleDeletePost}
+           postToDelete={postToDelete}
+
+        />
+       
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Filter Tabs */}
+          <div>
+            <div className="text-3xl mb-2 sm:mb-4 sm:text-4xl md:text-6xl lg:text-5xl m-5 font-light text-gray-400">
+              <b className="text-white font-bold">Hello</b> {user.displayName},
+            </div>
+
+            <div className="mt-2 sm:mt-4 mx-5 flex flex-wrap items-center text-sm sm:text-base md:text-lg">
+              <span>you’ve got ideas let’s make them unstoppable,</span>
+
+              {/* Button wrapper */}
+              <div className="mt-3 sm:mt-0 sm:ml-3 ml-0">
+                <FlippingButton />
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            <HubFilter
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+
+            {/* Show content based on tab */}
+            <div>
+              {activeTab === "all"}
+              {activeTab === "tools"}
+              {activeTab === "ideas"}
+              {activeTab === "top"}
+            </div>
+          </div>
+
+          {/* Posts Grid */}
+          <PostsGrid
+            posts={getFilteredPosts()}
+            getTypeColor={getTypeColor}
+            onSelectPost={setSelectedPostId}
+          />
+
+          {getFilteredPosts().length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                No posts found for this filter.
+              </p>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Post Detail Modal */}
+      <PostDialog
+  selectedPost={selectedPost}
+  user={user}
+  isPowering={isPowering}
+  newComment={newComment}
+  inputRef={inputRef}
+  lastCommentRef={lastCommentRef}
+  COMMENT_LENGTH={COMMENT_LENGTH}
+  onClose={() => setSelectedPostId(null)}
+  onLike={handleLike}
+  onAddComment={handleAddComment}
+  setNewComment={setNewComment}
+  setPostToDelete={setPostToDelete}
+  setDeleteConfirmOpen={setDeleteConfirmOpen}
+  setCommentToDelete={setCommentToDelete}
+/>
     </div>
   );
 };
