@@ -65,7 +65,7 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
 
       <SheetContent
         side="right"
-        className="glass-dark border-l border-white/20 w-64 flex flex-col h-screen"
+        className="glass-dark border-l border-white/20 flex flex-col h-screen"
       >
         <SheetHeader>
           <div className="text-white pt-10 m-full ">
