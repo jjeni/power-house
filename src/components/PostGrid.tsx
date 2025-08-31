@@ -83,13 +83,17 @@ function PostsGrid({
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
-                        <img
-                          src={post.photoURL || "/default-avatar.png"}
-                          alt="profile"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      </div>
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gradient-primary text-white font-bold">
+  {post.photoURL ? (
+    <img
+      src={post.photoURL}
+      alt="profile"
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <span>{post.author?.charAt(0).toUpperCase() || "?"}</span>
+  )}
+</div>
                       <div>
                         <p className="font-medium text-foreground text-sm">
                           {post.author}

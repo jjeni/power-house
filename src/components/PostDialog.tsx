@@ -25,9 +25,8 @@ type PostDialogProps = {
   setCommentToDelete: (id: number) => void;
 };
 
-const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
-export default function PostDialog({
+function PostDialog({
   selectedPost,
   user,
   isPowering,
@@ -52,13 +51,17 @@ export default function PostDialog({
             <DialogHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
-                    <img
-                      src={selectedPost.photoURL || "/default-avatar.png"}
-                      alt="profile"
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  </div>
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-gradient-primary text-white font-bold">
+  {selectedPost.photoURL ? (
+    <img
+      src={selectedPost.photoURL}
+      alt="profile"
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <span>{selectedPost.author?.charAt(0).toUpperCase() || "?"}</span>
+  )}
+</div>
                   <div>
                     <p className="font-medium text-left text-foreground">
                       {selectedPost.author}
@@ -273,3 +276,6 @@ export default function PostDialog({
     </Dialog>
   );
 }
+
+
+export default   PostDialog;

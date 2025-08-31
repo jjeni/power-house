@@ -58,7 +58,7 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
               className="w-9 h-9 rounded-full object-cover"
             />
           ) : (
-            user.displayName?.charAt(0) || "U"
+    <span>{user.author?.charAt(0).toUpperCase() || "?"}</span>
           )}
         </button>
       </SheetTrigger>
@@ -102,7 +102,7 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
 
             <Link
               to="/"
-              className="text-gray-700  text-left hover:text-primary flex items-center"
+              className="text-gray-700  text-left hover:bg-white/20 flex items-center"
             >
               <Rss className="w-4 mr-2" />
               My Posts
