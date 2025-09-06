@@ -51,16 +51,30 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
     <Sheet>
       <SheetTrigger asChild>
         <button className="w-9 h-9 rounded-full glass-dark flex items-center justify-center text-white border border-white/20 hover:scale-105 transition">
-          {user.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt="profile"
-              className="w-9 h-9 rounded-full object-cover"
-            />
-          ) : (
-    <span>{user.author?.charAt(0).toUpperCase() || "?"}</span>
-          )}
-        </button>
+  {user.photoURL ? (
+    <img
+      src={user.photoURL}
+      alt={user.displayName || "profile"}
+      referrerPolicy="no-referrer"  // <-- prevents Google blocking image
+      className="w-9 h-9 rounded-full object-cover"
+      onError={(e) => {
+        // fallback if photoURL is broken
+        e.currentTarget.style.display = "none";
+        e.currentTarget.insertAdjacentHTML(
+          "afterend",
+          `<span class='w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold'>
+            ${(user.displayName?.charAt(0).toUpperCase() || "?" )}
+          </span>`
+        );
+      }}
+    />
+  ) : (
+    <span className="w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold">
+      {user.displayName?.charAt(0).toUpperCase() || "?"}
+    </span>
+  )}
+</button>
+
       </SheetTrigger>
 
       <SheetContent
