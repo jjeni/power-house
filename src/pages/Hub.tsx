@@ -231,38 +231,34 @@ const HubPage = () => {
   };
 
   const handleLogin = async () => {
-    try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        console.log("Initiating signInWithRedirect...");
-        await signInWithRedirect(auth, googleProvider);
-        console.log("Redirect initiated successfully.");
-      } else {
-        const result = await signInWithPopup(auth, googleProvider);
-        if (result.user) {
-          toast({
-            title: "Welcome!",
-            description: `Signed in as ${result.user.displayName || result.user.email}`,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error.code === "auth/popup-blocked-by-browser") {
-        toast({
-          title: "Popup Blocked",
-          description: "Please enable popups or try again.",
-          variant: "destructive",
-        });
-      } else if (error.code !== "auth/popup-cancelled-by-user") {
-        toast({
-          title: "Login failed",
-          description: "Please try again.",
-          variant: "destructive",
-        });
-      }
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+
+    if (result.user) {
+      toast({
+        title: "Welcome!",
+        description: `Signed in as ${result.user.displayName || result.user.email}`,
+      });
     }
-  };
+  } catch (error: any) {
+    console.error("Login error:", error);
+
+    if (error.code === "auth/popup-blocked-by-browser") {
+      toast({
+        title: "Popup Blocked",
+        description: "Please enable popups or try again.",
+        variant: "destructive",
+      });
+    } else if (error.code !== "auth/popup-cancelled-by-user") {
+      toast({
+        title: "Login failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  }
+};
+
 
   const handleCreatePost = async () => {
     if (!isLoggedIn) {
