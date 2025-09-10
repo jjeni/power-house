@@ -16,7 +16,14 @@ import {
   onAuthStateChanged,
 } from "@/lib/firebase";
 
-import { Mail, LayoutDashboard, CircleUser, Rss, LogOut, Bug } from "lucide-react";
+import {
+  Mail,
+  LayoutDashboard,
+  CircleUser,
+  Rss,
+  LogOut,
+  Bug,
+} from "lucide-react";
 import HubPage from "@/pages/Hub";
 import { Link } from "react-router-dom";
 
@@ -139,7 +146,7 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
               <Mail className="w-4 h-4 mr-2" />
               Contact Us
             </a>
-          
+
             <hr className="border-white/20" />
           </div>
 
@@ -169,23 +176,17 @@ export default function NavbarProfile({ user, onLogin }: NavbarProfileProps) {
             </AlertDialog>
           </div>
 
-          <div className="relative mt-auto rounded-md border-2 border-white/20">
-  <a
-    href="https://forms.gle/egTkBLKhYgWdsrFz5"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="flex items-center justify-center px-4 py-2 rounded-md font-semibold text-white relative z-10"
-  >
-    <Bug className="w-4 h-4 mr-2" />
-    Report a Bug!
-  </a>
-
-  
-</div>
-
-
-
-
+          <div className="relative mt-auto mb-12 rounded-md border-2 border-red-400/20">
+            <a
+              href="https://forms.gle/egTkBLKhYgWdsrFz5"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center px-4 py-2 rounded-md font-semibold text-white relative z-10"
+            >
+              <Bug className="w-4 h-4 mr-2 fill-red-900" />
+              Report a Bug !
+            </a>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
