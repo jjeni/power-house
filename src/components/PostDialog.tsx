@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,7 +29,6 @@ type PostDialogProps = {
   setDeleteConfirmOpen: (val: boolean) => void;
   setCommentToDelete: (id: number) => void;
 };
-
 
 function PostDialog({
   selectedPost,
@@ -52,16 +56,18 @@ function PostDialog({
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-gradient-primary text-white font-bold">
-  {selectedPost.photoURL ? (
-    <img
-      src={selectedPost.photoURL}
-      alt="profile"
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <span>{selectedPost.author?.charAt(0).toUpperCase() || "?"}</span>
-  )}
-</div>
+                    {selectedPost.photoURL ? (
+                      <img
+                        src={selectedPost.photoURL}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>
+                        {selectedPost.author?.charAt(0).toUpperCase() || "?"}
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <p className="font-medium text-left text-foreground">
                       {selectedPost.author}
@@ -94,7 +100,10 @@ function PostDialog({
                 <Linkify options={{ target: "_blank" }}>
                   <span
                     className="[&>a]:break-all [&_a]:whitespace-normal [&_a]:break-words [&>a]:text-blue-400 [&>a]:underline"
-                    style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+                    style={{
+                      overflowWrap: "anywhere",
+                      wordBreak: "break-word",
+                    }}
                   >
                     {selectedPost.description}
                   </span>
@@ -201,7 +210,7 @@ function PostDialog({
                         className="bg-muted/20 rounded-lg p-3"
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
+                          <div className="w-6 h-6 bg-gradient-primary rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-xs">
                             {comment.author.charAt(0)}
                           </div>
                           <span className="font-medium text-sm text-foreground">
@@ -277,5 +286,4 @@ function PostDialog({
   );
 }
 
-
-export default   PostDialog;
+export default PostDialog;
